@@ -1,6 +1,6 @@
-# adder
+# Description
 
-A new Flutter project.
+App calculates sum of 2 numbers.
 
 ## Getting Started
 
