@@ -1,159 +1,181 @@
 import 'package:flutter/material.dart';
+import 'package:math_expressions/math_expressions.dart';
 
-void main() => runApp(MyApp());
-// void/type funcName => "return value"
+void main() => runApp(new MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final appTitle = 'Phan Công Danh - 19119160';
-
-    return MaterialApp(
-      title: "Sum of Two Numbers",
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text(appTitle),
-        ),
-        body: AddTwoNumbers(),
+    return new MaterialApp(
+      title: 'Calculator',
+      theme: new ThemeData(
+        primarySwatch: Colors.blue,
       ),
+      home: new MyHomePage(title: 'Danh Phan'),
     );
   }
 }
 
-// *
-class AddTwoNumbers extends StatefulWidget {
+class MyHomePage extends StatefulWidget {
+  MyHomePage({key, required this.title}) : super(key: key);
+  final String title;
   @override
-  _AddTwoNumbersState createState() => _AddTwoNumbersState();
+  _MyHomePageState createState() => new _MyHomePageState();
 }
 
-class _AddTwoNumbersState extends State<AddTwoNumbers> {
-  TextEditingController num1controller = new TextEditingController();
-  TextEditingController num2controller = new TextEditingController();
-  String result = "";
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 500,
-      child: Column(
-        children: <Widget>[
-          Padding(padding: EdgeInsets.only(top: 10)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                "Sum of Two Numbers",
-                style: TextStyle(
-                  fontSize: 30,
-                  color: Colors.blue,
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: <Widget>[
-              Text(
-                "  Number 1: ",
-                style: TextStyle(fontSize: 20, color: Colors.black),
-              ),
-              new Flexible(
-                child: new TextField(
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.black,
-                  ),
-                  keyboardType: TextInputType.number,
-                  controller: num1controller,
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: <Widget>[
-              Text(
-                "  Number 2: ",
-                style: TextStyle(fontSize: 20, color: Colors.black),
-              ),
-              new Flexible(
-                child: new TextField(
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.black,
-                  ),
-                  keyboardType: TextInputType.number,
-                  controller: num2controller,
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: 10),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              RaisedButton(
-                child: Text(
-                  "+",
-                  style: TextStyle(fontSize: 30, color: Colors.black),
-                ),
-                onPressed: () {
-                  setState(() {
-                    if (num1controller.text != "" &&
-                        num2controller.text != "") {
-                      double sum = double.parse(num1controller.text) +
-                          double.parse(num2controller.text);
-                      result = sum.toString();
-                    } else {
-                      showDialog(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                                title: const Text("WARNING"),
-                                content:
-                                    const Text("Please enter two numbers."),
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(ctx).pop();
-                                    },
-                                    child: Container(
-                                      color: Colors.green,
-                                      padding: const EdgeInsets.all(14),
-                                      child: const Text(
-                                        "OK",
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ));
-                    }
-                  });
-                },
-                //padding: EdgeInsets.all(5),
-              )
-            ],
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: 10),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                " Result: ",
-                style: TextStyle(
-                  fontSize: 30,
-                  color: Colors.red,
-                ),
-              ),
-              Text(
-                result,
-                style: TextStyle(fontSize: 30, color: Colors.red),
-              ),
-            ],
-          ),
-        ],
+class _MyHomePageState extends State<MyHomePage> {
+  String top_display = '';
+  String bot_display = '';
+  String userInput = '';
+  String result = '';
+  int sizeInput = 0;
+  bool doneCalc = false;
+
+  buttonPressed(String buttonText) {
+    if (buttonText == "CE") {
+      if (userInput.isNotEmpty) {
+        userInput = userInput.substring(0, sizeInput);
+        userInput += '0';
+        setState(() {
+          bot_display = '';
+        });
+      }
+    } else if (buttonText == "C") {
+      clearAll();
+    } else if (buttonText == "DEL") {
+      if (userInput.isNotEmpty) {
+        userInput = userInput.substring(0, userInput.length - 1);
+        setState(() {
+          bot_display = userInput;
+        });
+      }
+    } else if (buttonText == "=") {
+      calcResult();
+      userInput = result;
+      doneCalc = true;
+    } else {
+      if (doneCalc) {
+        clearAll();
+        doneCalc = false;
+      }
+      userInput += buttonText;
+      if (buttonText == "+" ||
+          buttonText == "-" ||
+          buttonText == "x" ||
+          buttonText == "÷" ||
+          buttonText == "%") {
+        sizeInput = userInput.length;
+        setState(() {
+          top_display = userInput;
+          bot_display = '';
+        });
+      } else
+        setState(() {
+          bot_display += buttonText;
+        });
+    }
+  }
+
+  void calcResult() {
+    try {
+      Parser p = Parser();
+      Expression exp =
+          p.parse(userInput.replaceAll('x', '*').replaceAll('÷', '/'));
+      ContextModel cm = ContextModel();
+      double eval = exp.evaluate(EvaluationType.REAL, cm);
+      result = eval.toStringAsFixed(3);
+      setState(() {
+        top_display = userInput;
+        bot_display = result;
+      });
+    } catch (e) {
+      result = "Error";
+    }
+  }
+
+  void clearAll() {
+    userInput = '';
+    result = '';
+    setState(() {
+      top_display = '';
+      bot_display = '';
+    });
+  }
+
+  Widget buildButton(String buttonText) {
+    return new Expanded(
+      child: new OutlineButton(
+        padding: new EdgeInsets.all(30.0),
+        child: new Text(
+          buttonText,
+          style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+        ),
+        onPressed: () => buttonPressed(buttonText),
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+        appBar: new AppBar(
+          title: new Text(widget.title),
+        ),
+        body: new Container(
+            child: new Column(
+          children: <Widget>[
+            new Container(
+                alignment: Alignment.centerRight,
+                padding:
+                    new EdgeInsets.symmetric(vertical: 5.0, horizontal: 20.0),
+                child: new Text(top_display,
+                    style: new TextStyle(
+                      fontSize: 25.0,
+                      fontWeight: FontWeight.normal,
+                    ))),
+            new Container(
+                alignment: Alignment.centerRight,
+                padding:
+                    new EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                child: new Text(bot_display,
+                    style: new TextStyle(
+                      fontSize: 50.0,
+                      fontWeight: FontWeight.bold,
+                    ))),
+            Padding(padding: EdgeInsets.only(top: 230)),
+            new Column(children: [
+              new Row(children: [
+                buildButton("CE"),
+                buildButton("C"),
+                buildButton("DEL"),
+                buildButton("÷")
+              ]),
+              new Row(children: [
+                buildButton("7"),
+                buildButton("8"),
+                buildButton("9"),
+                buildButton("x")
+              ]),
+              new Row(children: [
+                buildButton("4"),
+                buildButton("5"),
+                buildButton("6"),
+                buildButton("-")
+              ]),
+              new Row(children: [
+                buildButton("1"),
+                buildButton("2"),
+                buildButton("3"),
+                buildButton("+")
+              ]),
+              new Row(children: [
+                buildButton("%"),
+                buildButton("0"),
+                buildButton("."),
+                buildButton("=")
+              ]),
+            ])
+          ],
+        )));
   }
 }

@@ -1,6 +1,6 @@
 # 📦 Project Name
 
-> Adder.
+> Calculator.
 
 ---
 
@@ -19,14 +19,16 @@
 
 ## 📝 About
 
-> This is app to perform sum of 2 numbers.
+> This is app to perform calculation.
 
 ---
 
 ## ✨ Features
 
-- ✅ Calculate sum of 2 numbers
-- ✅ Display result
+- ✅ Calculate (+,-,*,/,%)
+- ✅ Clear buffer (C)
+- ✅ Clear entry (CE)
+- ✅ Delete (DEL)
 
 ---
 
